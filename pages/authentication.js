@@ -1,8 +1,12 @@
 import { useFormik } from "formik"
 import customerAPI from "../modules/customer/api/customerAPI"
+import {GET_CUSTOMER_TOKEN_BY_SLUG} from '../Schema/customer'
+import { useMutation } from "@apollo/client"
 import productAPI from "../modules/customer/api/productAPI"
 
 function Authentication() {
+  const [generateCustomerToken, {error}] = useMutation(GET_CUSTOMER_TOKEN_BY_SLUG);
+
   const formik = useFormik({
     initialValues: {
       email: "",
@@ -10,7 +14,13 @@ function Authentication() {
     },
     onSubmit: (values) => {
         // productAPI.getProductBySlug('test')
-        customerAPI.getCustomer('john.doe@example.com','b1b2b3l@w+');
+        generateCustomerToken({
+          variables:{
+            email:"john.doe@example.com",
+            password: "b1b2b3l@w+"
+          }
+        })
+        // customerAPI.getCustomer('john.doe@example.com','b1b2b3l@w+');
     },
   });
   return (
