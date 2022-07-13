@@ -1,30 +1,64 @@
 import { useFormik } from "formik"
 import customerAPI from "../modules/customer/api/customerAPI"
 import {GET_CUSTOMER_TOKEN_BY_SLUG} from '../Schema/customer'
-import { useMutation } from "@apollo/client"
+import { useMutation,useQuery } from "@apollo/client"
 import productAPI from "../modules/customer/api/productAPI"
+import { setContext } from '@apollo/client/link/context';
+import { gql } from '@apollo/client';
+
+
+const authLink = setContext((_, { headers }) => {
+  // get the authentication token from local storage if it exists
+  const token = localStorage.getItem('token');
+  // return the headers to the context so httpLink can read them
+  return {
+    headers: {
+      ...headers,
+      authorization: token ? `Bearer ${token}` : "",
+    }
+  }
+});
+
+const GET_PRODUCTS = gql `
+{
+  products(search: "") {
+    items {
+      name
+    }
+  }
+}
+`
 
 function Authentication() {
-  const [generateCustomerToken, {error}] = useMutation(GET_CUSTOMER_TOKEN_BY_SLUG);
-
+  const [generateCustomerToken, {data,loading,error}] = useMutation(GET_CUSTOMER_TOKEN_BY_SLUG);
   const formik = useFormik({
     initialValues: {
       email: "",
       password: "",
     },
-    onSubmit: (values) => {
-        // productAPI.getProductBySlug('test')
-        generateCustomerToken({
-          variables:{
-            email:"john.doe@example.com",
-            password: "b1b2b3l@w+"
+    onSubmit: async(values) => {
+        try{
+         generateCustomerToken({
+            variables:{
+              email: values.email,
+              password: values.password
+            }
+          })
+          if(data){
+            localStorage.setItem('token',data.generateCustomerToken.token)
           }
-        })
-        // customerAPI.getCustomer('john.doe@example.com','b1b2b3l@w+');
+          console.log(data)
+          // alert(error)
+        }
+        catch(err){
+          console.log(err)
+        }
+        
     },
   });
   return (
-    <form onSubmit={formik.handleSubmit}>
+    <div>
+      <form onSubmit={formik.handleSubmit}>
       <label htmlFor="email">Email Address</label>
       <input
         id="email"
@@ -45,6 +79,8 @@ function Authentication() {
 
       <button type="submit">Submit</button>
     </form>
+    </div>
+    
   );
 }
 

@@ -7,3 +7,11 @@ mutation generateCustomerToken($email: String!, $password: String!) {
     }
   }
 `
+
+export const GET_CUSTOMER_DETAIL = gql `
+  
+`
+
+// export const GET_CUSTOMER_DETAIL = gql `
+
+
